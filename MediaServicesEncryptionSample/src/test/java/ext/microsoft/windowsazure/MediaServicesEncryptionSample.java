@@ -57,7 +57,7 @@ public class MediaServicesEncryptionSample {
 	            // comment out the calls to Upload(), Transfer(), and Download(), 
 	            // and uncomment the following call to Cleanup().
 	            //cleanup();
-	        }      
+	        }
 	        catch (Exception e) 
 	        {
 	            System.out.println("Exception encountered: " + e.getStackTrace());
@@ -73,8 +73,8 @@ public class MediaServicesEncryptionSample {
 	    {
 	        String mediaServiceUri = "https://media.windows.net/API/";	                                
 	        String oAuthUri = "https://wamsprodglobal001acs.accesscontrol.windows.net/v2/OAuth2-13";
-	        String clientId = "your_client_id";  // Use your media service account name.
-	        String clientSecret = "your_client_seecret"; // Use your media service access key. 
+	        String clientId = "javasdktest01";  // Use your media service account name.
+	        String clientSecret = "I5fEMZf2YncHcpAKTqsYPqTShi1zZjgofi4LN6CAKBE="; // Use your media service access key. 
 	        String scope = "urn:WindowsAzureMediaServices";
 
 	        // Specify the configuration values to use with the MediaContract object.
