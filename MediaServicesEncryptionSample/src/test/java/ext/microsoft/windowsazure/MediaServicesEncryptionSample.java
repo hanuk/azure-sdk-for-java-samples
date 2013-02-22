@@ -13,9 +13,7 @@
  * limitations under the License.
  */
 package test.java.ext.microsoft.windowsazure;
-/**
- * @param args
- */
+
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.EnumSet;
@@ -43,34 +41,26 @@ public class MediaServicesEncryptionSample {
 	        try 
 	        {
 	            // Set up the MediaContract object to call into the media services.
-	            Init();
-
+	            initialization();  
+	            
 	            // Upload a local file to a media asset.
-	            Upload();
+	            upload();
 
-	            // Transform the asset.
-	            Transform();
+	            // Decrypt the asset.
+	            descryptAsset();
 
 	            // Retrieve the URL of the asset's transformed output.
-	            Download();
+	            download();
 
 	            // Delete all assets. 
 	            // When you want to delete the assets that have been uploaded, 
 	            // comment out the calls to Upload(), Transfer(), and Download(), 
 	            // and uncomment the following call to Cleanup().
-	            Cleanup();
-
-	            System.out.println("Application completed.");
-	        }
-	        catch (ServiceException se) 
-	        {
-	            System.out.println("ServiceException encountered.");
-	            System.out.println(se.getMessage());
-	        }
+	            //cleanup();
+	        }      
 	        catch (Exception e) 
 	        {
-	            System.out.println("Exception encountered.");
-	            System.out.println(e.getMessage());
+	            System.out.println("Exception encountered: " + e.getStackTrace());
 	        }
 	    }
 
@@ -79,10 +69,9 @@ public class MediaServicesEncryptionSample {
 	    // Substitute your media service account name and access key for the clientId and clientSecret variables.
 	    // You can obtain your media service account name and access key from the Media Services section
 	    // of the Windows Azure Management portal, https://manage.windowsazure.com.
-	    private static void Init() 
+	    private static void initialization() 
 	    {
-	        String mediaServiceUri = "https://media.windows.net/API/";
-	                                //https://wamsbluclus001rest-hs.cloudapp.net
+	        String mediaServiceUri = "https://media.windows.net/API/";	                                
 	        String oAuthUri = "https://wamsprodglobal001acs.accesscontrol.windows.net/v2/OAuth2-13";
 	        String clientId = "your_client_id";  // Use your media service account name.
 	        String clientSecret = "your_client_seecret"; // Use your media service access key. 
@@ -99,11 +88,10 @@ public class MediaServicesEncryptionSample {
 	    // Upload a media file to your Media Services account.
 	    // This code creates an asset, an access policy (using Write access) and a locator, 
 	    // and uses those objects to upload a local file to the asset.
-	    private static void Upload() throws ServiceException, FileNotFoundException, NoSuchAlgorithmException, Exception 
+	    private static void upload() throws ServiceException, FileNotFoundException, NoSuchAlgorithmException, Exception 
 	    {
 	        // Create an asset.
-	        asset = mediaService.create(Asset.create().setAlternateId("altId").setOptions(AssetOption.StorageEncrypted)); 
-	        
+	        asset = mediaService.create(Asset.create().setAlternateId("altId").setOptions(AssetOption.StorageEncrypted));
 	        System.out.println("Created asset with id: " + asset.getId());
 
 	        // Create an access policy that provides Write access for 15 minutes.
@@ -126,11 +114,11 @@ public class MediaServicesEncryptionSample {
 	        // The local file that will be uploaded to your Media Services account.
 	        InputStream mpeg4H264InputStream = new FileInputStream(new File("c:/media/MPEG4-H264.mp4")); 
 	        
-	        //encrypt the InputStream
-	        InputStream encryptedContent = EncryptInputStreame(mpeg4H264InputStream);	       
+	        // encrypt the InputStream
+	        InputStream encryptedContent = encryptInputStreame(mpeg4H264InputStream);	       
 	       
-	        //make content key
-	        String contentKeyId = makeContentKeyId();
+	        // make content key
+	        String contentKeyId = createContentKeyId();
 	    	
 	        // link the content key with the asset.
 	        mediaService.action(Asset.linkContentKey(asset.getId(), contentKeyId)); 
@@ -142,8 +130,8 @@ public class MediaServicesEncryptionSample {
 	        mediaService.action(AssetFile.createFileInfos(asset.getId()));
 	    }
 	    
-	    //inputstream encryption
-	    private static InputStream EncryptInputStreame(InputStream inputStream) throws Exception {	        
+	    // Encrypts a stream of data using AES with a randomly generated key.
+	    private static InputStream encryptInputStreame(InputStream inputStream) throws Exception {	        
 	    	// Media Services requires 256-bit (32-byte) keys and
 	        // 128-bit (16-byte) initialization vectors (IV) for AES encryption,
 	        // and also requires that only the first 8 bytes of the IV is filled.
@@ -155,33 +143,34 @@ public class MediaServicesEncryptionSample {
 	        byte[] iv = new byte[16];
 	        System.arraycopy(effectiveIv, 0, iv, 0, effectiveIv.length); 
 	        
-	        InputStream encryptedContent = EncryptionHelper.encryptFile(inputStream, AesKey, iv);
+	        InputStream encryptedInputStream = EncryptionHelper.encryptFile(inputStream, AesKey, iv);
 	        System.out.println("EncryptInputStream done");
-	        return encryptedContent; 
+	        return encryptedInputStream; 
 	    }
 	    
-	    //create contentkey using the EncryptionHelper methods
-	    private static String makeContentKeyId() throws ServiceException, Exception {
+	    // Creates a content key by encrypting AES key using protection key provided by media service server
+	    private static String createContentKeyId() throws ServiceException, Exception {
 	        String protectionKeyId = mediaService.action(ProtectionKey.getProtectionKeyId(ContentKeyType.StorageEncryption));
 	        String protectionKey = mediaService.action(ProtectionKey.getProtectionKey(protectionKeyId));
 
 	        String contentKeyIdUuid = UUID.randomUUID().toString();
 	        String contentKeyId = String.format("nb:kid:UUID:%s", contentKeyIdUuid);   
 
-	        byte[] encryptedContentKey = EncryptionHelper.encryptSymmetricKey(protectionKey, AesKey);
+	        byte[] encryptedContentKey = EncryptionHelper.encryptAesKey(protectionKey, AesKey);
 	        String encryptedContentKeyString = Base64.encode(encryptedContentKey);
 	        String checksum = EncryptionHelper.calculateContentKeyChecksum(contentKeyIdUuid, AesKey);
 
 	        ContentKeyInfo contentKeyInfo = mediaService.create(ContentKey
 	                .create(contentKeyId, ContentKeyType.StorageEncryption, encryptedContentKeyString)
 	                .setChecksum(checksum).setProtectionKeyId(protectionKeyId));
-	        System.out.println("makeContentKeyId done");
+	        
+	        System.out.println("createContentKeyId done");
 	        return contentKeyInfo.getId();
 	    }	  
 
 	    // Create a job that contains a task to transform the asset.
 	    // In this example, the asset will be transformed using the Windows Azure Media Encoder.
- 	    private static void Transform() throws ServiceException, InterruptedException 
+ 	    private static void descryptAsset() throws ServiceException, InterruptedException 
 	    {
 	        // Use the Windows Azure Media Encoder, by specifying it by name.
 	        MediaProcessorInfo mediaProcessor = mediaService.list(MediaProcessor.list().set("$filter", "Name eq 'Windows Azure Media Encoder'")).get(0);
@@ -208,27 +197,27 @@ public class MediaServicesEncryptionSample {
 	        String jobId = jobInfo.getId();
 	        System.out.println("Created job with id: " + jobId);
 	        // Check to see if the job has completed.
-	        CheckJobStatus(jobId);
+	        checkJobStatus(jobId);
 	    }
 
-	    // Download the URL of the transformed asset.
+	    // Gets the URI of the decrypted asset.
 	    // This code an access policy (with Read access) and a locator,
 	    // and uses those objects to retrieve the path.
 	    // You can use the path to access the asset.
-	    private static void Download() throws ServiceException 
+	    private static void download() throws ServiceException 
 	    {
 	        // Create an access policy that provides Read access for 15 minutes.
 	        AccessPolicyInfo downloadAccessPolicy = mediaService.create(AccessPolicy.create("Download", 15.0, EnumSet.of(AccessPolicyPermission.READ)));
 
 	        // Create a locator using the access policy and asset.
 	        // This will provide the location information needed to access the asset.
-	        LocatorInfo downloadlocator = mediaService.create(Locator.create(downloadAccessPolicy.getId(), asset.getId(), LocatorType.SAS));
+	        LocatorInfo locatorInfo = mediaService.create(Locator.create(downloadAccessPolicy.getId(), asset.getId(), LocatorType.SAS));
 
 	        // Iterate through the files associated with the asset.
 	        for(AssetFileInfo assetFile: mediaService.list(AssetFile.list(asset.getAssetFilesLink())))
 	        {
 	            String file = assetFile.getName();
-	            String locatorPath = downloadlocator.getPath();
+	            String locatorPath = locatorInfo.getPath();
 	            int startOfSas = locatorPath.indexOf("?");
 	            String blobPath = locatorPath + file;
 	            if (startOfSas >= 0) 
@@ -242,7 +231,7 @@ public class MediaServicesEncryptionSample {
 	    // Remove all assets from your Media Services account.
 	    // You could instead remove assets by name or ID, etc., but for 
 	    // simplicity this example removes all of them.
-	    private static void Cleanup() throws ServiceException 
+	    private static void cleanup() throws ServiceException 
 	    {
 	        // Retrieve a list of all assets.
 	        List<AssetInfo> assets = mediaService.list(Asset.list());
@@ -255,7 +244,7 @@ public class MediaServicesEncryptionSample {
 	    }
 
 	    // Helper function to check to on the status of the job.
-	    private static void CheckJobStatus(String jobId) throws InterruptedException, ServiceException
+	    private static void checkJobStatus(String jobId) throws InterruptedException, ServiceException
 	    {
 	        int maxRetries = 12; // Number of times to retry. Small jobs often take 2 minutes.
 	        JobState jobState = null;
@@ -276,5 +265,4 @@ public class MediaServicesEncryptionSample {
 	            maxRetries--;
 	        }
 	    }
-
 	}
