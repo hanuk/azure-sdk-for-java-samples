@@ -30,7 +30,7 @@ import javax.crypto.spec.SecretKeySpec;
 import com.microsoft.windowsazure.services.core.storage.utils.Base64;
 
 public class EncryptionHelper {
-    public static boolean canUseStrongCrypto() {
+    public static boolean canUseUnlimitedStrengthJurisdictionPolicy() {
         try {
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
             SecretKeySpec secretKeySpec = new SecretKeySpec(new byte[32], "AES");
@@ -41,8 +41,8 @@ public class EncryptionHelper {
         }
         return true;
     }
-
-    public static byte[] encryptSymmetricKey(String protectionKey, byte[] inputData) throws Exception {
+    
+    public static byte[] encryptAesKey(String protectionKey, byte[] inputData) throws Exception {
         Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-1AndMGF1Padding");
         CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
         byte[] protectionKeyBytes = Base64.decode(protectionKey);
@@ -66,10 +66,10 @@ public class EncryptionHelper {
         return checksum;
     }
 
-    public static InputStream encryptFile(InputStream inputStream, byte[] key, byte[] iv) throws Exception {
+    public static InputStream encryptFile(InputStream inputStream, byte[] key, byte[] initializationVector) throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
         SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
-        IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(initializationVector);
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivParameterSpec);
         CipherInputStream cipherInputStream = new CipherInputStream(inputStream, cipher);
         return cipherInputStream;
