@@ -61,17 +61,21 @@ public class FederatedConfiguration {
 	private FederatedConfiguration(Properties properties) {
 		this.properties = properties;
 	}
-
-	public String getStsUrl() {
-		return this.properties.getProperty("federation.trustedissuers.issuer");
+	public String getFederationMetadataUrl() {
+		return this.properties.getProperty("federation.metadata.url");
 	}
-
+	public String getStsUrl() {
+		//return this.properties.getProperty("federation.trustedissuers.issuer");
+		String fmdUrl = getFederationMetadataUrl();		
+		return FederationMetadataDocument.getInstance(fmdUrl).getSTSEndPoint();
+	}
 	public String getStsFriendlyName() {
 		return this.properties.getProperty("federation.trustedissuers.friendlyname");
 	}
 	
 	public String getThumbprint() {
-		return this.properties.getProperty("federation.trustedissuers.thumbprint");
+		String fmdUrl = getFederationMetadataUrl();		
+		return FederationMetadataParser.GetThumbPrint(FederationMetadataDocument.getInstance(fmdUrl));
 	}
 
 	public String getRealm() {

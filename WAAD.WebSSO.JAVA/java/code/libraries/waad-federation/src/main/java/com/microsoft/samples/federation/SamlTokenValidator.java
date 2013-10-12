@@ -148,6 +148,8 @@ public class SamlTokenValidator {
 			trusted = validateIssuerUsingCertificateThumbprint(samlToken,
 					this.thumbprint);
 		}
+		//DEBUG - hanuk (debug validateIssuerUsingCertificateThumbprint)
+		//trusted = true;
 
 		if (!trusted) {
 			throw new FederationException(
@@ -283,7 +285,6 @@ public class SamlTokenValidator {
 		KeyInfo keyInfo = signature.getKeyInfo();
 		X509Certificate pubKey = (X509Certificate) KeyInfoHelper
 				.getCertificates(keyInfo).get(0);
-
 		BasicX509Credential cred = new BasicX509Credential();
 		cred.setEntityCertificate(pubKey);
 		cred.setEntityId("signing-entity-ID");

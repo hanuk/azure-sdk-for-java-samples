@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -49,7 +48,7 @@ public class FederatedLoginManager {
 	private FederatedAuthenticationListener listener;
 
 	public static FederatedLoginManager fromRequest(HttpServletRequest request) {
-		return fromRequest(request, null);
+		return fromRequest(request,null);
 	}
 
 	public static FederatedLoginManager fromRequest(HttpServletRequest request, FederatedAuthenticationListener listener) {
