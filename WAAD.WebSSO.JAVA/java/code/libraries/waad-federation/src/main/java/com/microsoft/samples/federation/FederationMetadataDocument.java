@@ -1,3 +1,29 @@
+//-----------------------------------------------------------------------
+// <copyright file="Constants.java" company="Microsoft">
+//     Copyright (c) Microsoft Corporation.  All rights reserved.
+//
+// 
+//    Copyright 2012 Microsoft Corporation
+//    All rights reserved.
+//
+//    Licensed under the Apache License, Version 2.0 (the "License");
+//    you may not use this file except in compliance with the License.
+//    You may obtain a copy of the License at
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// THIS CODE IS PROVIDED *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+// EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED WARRANTIES OR 
+// CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE, MERCHANTABLITY OR NON-INFRINGEMENT.
+//
+// See the Apache Version 2.0 License for specific language governing 
+// permissions and limitations under the License.
+// </copyright>
+//
+// <summary>
+//     
+//
+// </summary>
+//----------------------------------------------------------------------------------------------
 package com.microsoft.samples.federation;
 
 import java.io.IOException;
@@ -25,10 +51,14 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 public class FederationMetadataDocument {
+	private static final String STS_ADDRESS_NODE_NAME = "/EntityDescriptor/RoleDescriptor/SecurityTokenServiceEndpoint/EndpointReference/Address/text()"; 
+	private static final String X509_CERT_NODE_NAME = "/EntityDescriptor/Signature/KeyInfo/X509Data/X509Certificate/text()"; 
 	//file system or HTTP URL
 	private  String  _fmdUrl; 
 	private Document _fmdDoc = null; 
 	private boolean _loaded = false;
+	private String _stsep = null; 
+	private String _x509CertStr = null; 
 	//singleton instance 
 	private static FederationMetadataDocument _instance = null; 
 	private FederationMetadataDocument(String fmdUrl) {
@@ -40,12 +70,14 @@ public class FederationMetadataDocument {
 		return entityDescriptor.getAttributes().getNamedItem("entityID").getTextContent();
 	}
 	public String getSTSEndPoint() {
-		String stsep = getSingleNodeText("/EntityDescriptor/RoleDescriptor/SecurityTokenServiceEndpoint/EndpointReference/Address/text()");
-		return stsep;
+		if (_stsep == null)
+			_stsep = getSingleNodeText(STS_ADDRESS_NODE_NAME);
+		return _stsep;
 	}
 	public String getX509CertString() {
-		
-		return getSingleNodeText("/EntityDescriptor/Signature/KeyInfo/X509Data/X509Certificate/text()"); 
+		if (_x509CertStr == null)
+			_x509CertStr =  getSingleNodeText(X509_CERT_NODE_NAME); 
+		return _x509CertStr; 
 	}
 	private String getSingleNodeText(String xpathStr) {
 		XPathFactory xpf = XPathFactory.newInstance();
@@ -59,8 +91,7 @@ public class FederationMetadataDocument {
 			}
 				
 		} catch (XPathExpressionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//do something here
 		}
 		return null;
 	}

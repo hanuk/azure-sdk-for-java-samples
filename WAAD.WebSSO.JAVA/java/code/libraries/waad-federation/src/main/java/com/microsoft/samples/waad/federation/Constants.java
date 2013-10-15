@@ -30,6 +30,6 @@ package com.microsoft.samples.waad.federation;
 public final class Constants {
     public static final String REPOSITORY_FILENAME = "/trusted.issuers.xml";    
     public static final String REPOSITORY_NAME_ATTRIBUTE = "name";        
-    public static final String REPOSITORY_DISPLAY_NAME_ATTRIBUTE = "displayName";    
+    public static final String REPOSITORY_DISPLAY_NAME_ATTRIBUTE = "displayname";    
     public static final String REPOSITORY_REALM_ATTRIBUTE = "realm";
 }

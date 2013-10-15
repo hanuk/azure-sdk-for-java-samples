@@ -59,7 +59,7 @@ public class TrustedIssuer {
 	public String getSpn() {
 		return this.spn;
 	}
-
+	
 	public String getLoginURL(String returnUrl) {
 		return FederatedLoginManager.getFederatedLoginUrl(this.spn, this.replyURL, returnUrl);
 	}

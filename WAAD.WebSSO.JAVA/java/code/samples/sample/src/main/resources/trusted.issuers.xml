@@ -1,4 +1,9 @@
 <issuers>
-	<issuer name="hkcorp.onmicrosoft.com" displayName="hkcorp"
-		realm="spn:b9f0f8cf-e160-43ba-832f-4caa93553e82" />
+   <issuer name="contoso.onmicrosoft.com" 
+      displayname="Contoso"
+      metadataurl="https://login.windows.net/efaee2d0-5730-46ea-a8a7-e502fe8dbb4b/FederationMetadata/2007-06/FederationMetadata.xml"
+      realm="spn:xxxxxxxx-e160-43ba-832f-4caa93553e82"
+      audienceuri="spn:xxxxxxxx-e160-43ba-832f-4caa93553e82"
+      replyurl="https://localhost:8443/sample/wsfed-saml"
+   />
 </issuers>
