@@ -51,7 +51,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 public class FederationMetadataDocument {
-	private static final String STS_ADDRESS_NODE_NAME = "/EntityDescriptor/RoleDescriptor/SecurityTokenServiceEndpoint/EndpointReference/Address/text()"; 
+	private static final String STS_ADDRESS_NODE_NAME = "/EntityDescriptor/RoleDescriptor/PassiveRequestorEndpoint/EndpointReference/Address/text()"; 
 	private static final String X509_CERT_NODE_NAME = "/EntityDescriptor/Signature/KeyInfo/X509Data/X509Certificate/text()"; 
 	//file system or HTTP URL
 	private  String  _fmdUrl; 
